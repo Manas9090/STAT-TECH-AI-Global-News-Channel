@@ -5,7 +5,7 @@ import time
 from gtts import gTTS
 import tempfile
 
-# --- CONFIG ---
+# --- API Keys ---
 openai.api_key = st.secrets["openai_api_key"]
 news_api_key = st.secrets["news_api_key"]
 
@@ -37,7 +37,7 @@ CATEGORIES = {
     "Technology 💻": "technology"
 }
 
-# --- Language Map ---
+# --- Languages for Summary and TTS ---
 language_map = {
     "English": "en", "Hindi": "hi", "Bengali": "bn", "Gujarati": "gu",
     "Tamil": "ta", "Telugu": "te", "Kannada": "kn", "Malayalam": "ml",
@@ -54,10 +54,9 @@ category_videos = {
     "Other": "https://www.youtube.com/embed/HtTUsOKjWyQ"
 }
 
-# --- Streamlit Page Config ---
+# --- Page Config ---
 st.set_page_config(page_title="🗞️ Categorization & Summarization", layout="wide")
 
-# --- Custom Title ---
 st.markdown("""
 <div style='text-align: center; padding: 10px 0;'>
 <span style='font-size:28px; color:#8F00FF; font-weight:bold;'>Categorization & Summarization</span>
@@ -141,13 +140,12 @@ def summarize_news(title, description, lang="English"):
     except:
         return description[:150] + "..."
 
-# --- Fetch News ---
+# --- Fetch and Display News ---
 news_data = fetch_news(query=search_query, country=country_code, category=category_code)
 
 if show_raw_json:
     st.write(news_data)
 
-# --- Show Articles ---
 if not news_data:
     st.warning("⚠️ No news found. Try changing filters or keywords.")
 else:
@@ -171,9 +169,9 @@ else:
             if url:
                 st.markdown(f"[🌐 Read Full Article]({url})")
 
-# --- AI Categorization & Summary ---
-if news_data and st.button("💡 AI Categorize & Summarize All"):
-    with st.spinner("🧠 GPT processing..."):
+# --- Button for Categorization & Summary ---
+if news_data and st.button("🧠 Categorize & Summarize All"):
+    with st.spinner("🔄 Summarizing and categorizing news... Please wait."):
         categorized = {"Politics": [], "Economy": [], "Entertainment": [], "Technology": [], "Sports": [], "Other": []}
 
         for idx, article in enumerate(news_data):
@@ -185,7 +183,7 @@ if news_data and st.button("💡 AI Categorize & Summarize All"):
             categorized.setdefault(category, []).append((title, summary, description, url))
             time.sleep(1)
 
-    st.subheader("🔎 AI-Powered Categorized News")
+    st.subheader("🔎 Categorized News with Summaries")
     for cat, items in categorized.items():
         if items:
             st.markdown(f"<h3 style='color:#D90429;'>📂 {cat} News</h3>", unsafe_allow_html=True)
@@ -206,7 +204,6 @@ if news_data and st.button("💡 AI Categorize & Summarize All"):
                         st.markdown(f"[🌐 Read Full Article]({url})")
                     st.write(description)
 
-            # --- YouTube Video per Category ---
             if cat in category_videos:
                 st.markdown("🎥 **Watch more about this category:**")
                 st.video(category_videos[cat])
